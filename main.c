@@ -1,17 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 typedef struct Polynomial {
-    unsigned short degree;
-    float tolerance;
     float *terms;
 }Polynomial;
 
-Polynomial *create_equation(unsigned short degree);
-void display(Polynomial *func);
+typedef struct Table {
+    Polynomial *first_func;
+    Polynomial *middle_func;
+    Polynomial *last_func;
+    float neg_u0;
+    float neg_v0;
+    float delta_u;
+    float delta_v;
+    float u_k1;
+    float v_k1;
+}Table;
 
-unsigned int input_degree() {
+typedef struct Sheet {
+    unsigned short degree;
+    float tolerance;
+    Polynomial *func;
+    Table **table;
+}Sheet;
+
+
+
+Polynomial *create_equation(unsigned short degree);
+Sheet *create_sheet(unsigned short degree);
+void display(Sheet *sheet);
+
+unsigned short input_degree() {
     unsigned short degree;
     printf("Enter degree of the Polynomial: ");
     scanf("%d", &degree);
@@ -23,36 +42,45 @@ unsigned int input_degree() {
 
 int main() {
     unsigned short degree = input_degree();
-    Polynomial *function1 = create_equation(degree);
+    Sheet *sheet1 = create_sheet(degree);
 
-    display(function1);
+    display(sheet1);
+
+    
     return 0;
+}
+
+Sheet *create_sheet(unsigned short degree) {
+    Sheet *paper = (Sheet*) malloc(sizeof(Sheet));
+    paper->degree = degree;
+    paper->func = create_equation(degree);
+    printf("Enter Tolerance: ");
+    scanf("%f", &paper->tolerance);
+    
+    return paper;
 }
 
 
 Polynomial *create_equation(unsigned short degree) {
     Polynomial *func = (Polynomial*) malloc(sizeof(Polynomial));
     func->terms = (float *) malloc (degree * sizeof(float));
-    func->degree = degree;
     
     for(int i=0; i<=degree;i++) {
         printf("Enter Coefficient (x^%d): ", i);
         scanf("%f", &func->terms[i]);
     }
-    printf("Enter Tolerance: ");
-    scanf("%f", &func->tolerance);
+
 
     return func;
 }
 
-void display(Polynomial *func) {
+void display(Sheet *sheet) {
 
-
-    for(int i = func->degree; i >= 0; i--) {
+    for(int i = sheet->degree; i >= 0; i--) {
         if(i == 0)
-            printf("%.2fx^%d", func->terms[i], i);
+            printf("%.2fx^%d", sheet->func->terms[i], i);
         else 
-            printf("%.2fx^%d + ", func->terms[i], i);
+            printf("%.2fx^%d + ", sheet->func->terms[i], i);
     }
 
 }
