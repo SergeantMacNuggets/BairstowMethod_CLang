@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "linkedlist.h"
-
+#include <math.h>
 typedef struct Polynomial {
     unsigned short degree;
     float *terms;
@@ -19,11 +18,40 @@ typedef struct Table {
     float v_k1;
 }Table;
 
+typedef struct LinkedList {
+    Table *table;
+    struct LinkedList *next;
+}LinkedList;
 typedef struct Sheet {
     float tolerance;
     Polynomial *func;
     LinkedList *tables;
 }Sheet;
+
+
+LinkedList *create_list() {
+    LinkedList *head = (LinkedList*) malloc(sizeof(LinkedList));
+    head->table = NULL;
+    head->next = NULL;
+    return head;
+}
+
+void add_table(LinkedList *head, void *table) {
+
+    if(head->table == NULL) {
+        head->table = table;
+        return;
+    }
+
+    LinkedList *ptr = head;
+
+    while(ptr != NULL) {
+        ptr=ptr->next;
+    }
+
+    ptr = (LinkedList*)malloc(sizeof(LinkedList));
+    ptr->table = table;
+}
 
 
 Polynomial *create_equation(unsigned short degree);
@@ -49,6 +77,20 @@ int main() {
     return 0;
 }
 
+void tolerance_loop(LinkedList *head,Polynomial *func, float tolerance) {
+    unsigned short max = func->degree-1;
+    Table *table = head->table;
+
+   while(fabsf(table->middle_func->terms[max]) + fabsf(table->middle_func->terms[max-1]) > tolerance) {
+
+    add_table(head, table);
+    table = create_table(table->u_k1, table->v_k1, func);
+
+   }
+    
+    printf("STOP\n");
+}
+
 Sheet *create_sheet(unsigned short degree) {
     Sheet *paper = (Sheet*) malloc(sizeof(Sheet));
     paper->func = create_equation(degree);
@@ -56,6 +98,7 @@ Sheet *create_sheet(unsigned short degree) {
     printf("Enter Tolerance: ");
     scanf("%f", &paper->tolerance);
     add_table(paper->tables, create_table(1,1, paper->func));    
+    tolerance_loop(paper->tables, paper->func, paper->tolerance);
     return paper;
 }
 
@@ -125,7 +168,7 @@ Table *create_table(float u0, float v0, Polynomial *first_func) {
     new_table->u_k1 = u0 + new_table->delta_u;
     new_table->v_k1 = v0 + new_table->delta_v;
     printf("U0 = %.6f\tV0=%.6f\n", new_table->delta_u, new_table->delta_v);
-    printf("Uk+1 = %.6f\tVk+1 = %.6f\n", new_table->u_k1, new_table->v_k1);
+    printf("Uk+1 = %.6f\tVk+1 = %.6f\n\n\n", new_table->u_k1, new_table->v_k1);
     return new_table;
 }
 
@@ -139,10 +182,10 @@ void display(Polynomial *func) {
             op = '-';
         }
         if(i == 0)
-            printf("%.2fx^%d", terms, func->degree - i-1);
+            printf("%.6fx^%d", terms, func->degree - i-1);
         else {
             
-            printf(" %c %.2fx^%d", op, terms, func->degree - i-1);
+            printf(" %c %.6fx^%d", op, terms, func->degree - i-1);
         }
             
     }
