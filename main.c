@@ -48,7 +48,7 @@ void display(Polynomial *func);
 unsigned short input_degree() {
     unsigned short degree;
     printf("Enter degree of the Polynomial: ");
-    scanf("%d", &degree);
+    scanf("%hd", &degree);
     if(degree < 2 || degree > 5) {
         printf("Degree must be greater than 1 and Less than 6!\n");
         return input_degree();
@@ -59,7 +59,6 @@ unsigned short input_degree() {
 int main() {
     unsigned short degree = input_degree();
     Sheet *sheet1 = create_sheet(degree);
-
     // free(sheet1);
     return 0;
 }
